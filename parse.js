@@ -20,6 +20,9 @@ convert:
 {type:"syntax",val:")"}
 ]
 
+(for c+p)
+[{type:"int",val:1},{type:"int",val:2},{type:"ident",name:"+"},{type:"syntax",val:"("},{type:"ident",name:"name"},{type:"syntax",val:";"},{type:"ident",name:"args"},{type:"syntax",val:"->"},{type:"int",val:2},{type:"ident",name:"args"},{type:"ident",name:"+"},{type:"syntax",val:")"}]
+
 to:
 [
     {type:"int", val:1},
@@ -86,7 +89,7 @@ const parens = (parser) => (stream) => {
 const many = (parser) => (stream) => {
     let parsed = [];
     for (let i = parser(stream); i.parsed !== null; i = parser(stream)) {
-        idents.push(i.parsed);
+        parsed.push(i.parsed);
     }
     return {parsed:parsed, stream:stream};
 }
@@ -118,7 +121,7 @@ const parseIdent = (stream) => {
         return {parsed:null, stream:stream};
     } else {
         stream.shift();
-        return {parsed:{type:e.type, val:e.val}, stream:stream};
+        return {parsed:{type:e.type, val:e.name}, stream:stream};
     }
 }
 
@@ -156,19 +159,19 @@ const parseSyntax = (syntax, stream) => {
 /* takes in stream, outputs string or null - FAILABLE */
 const parseName = (stream) => {
     let id = parseIdent(stream);
-    if (id === null) {
+    if (id.parsed === null) {
         return {parsed:null, stream:stream};
     }
     let syn = parseSyntax(";", stream);
-    if (syn === null) {
+    if (syn.parsed === null) {
         throw 'could not parse name!'
     }
-    return id.val;
+    return {parsed:id.parsed.val, stream:stream};
 }
 
 /* takes in stream, outputs parsed item or null - FAILABLE */
 const parseLambda = (stream) => {
-    let name = attempt(parseName)(stream).val;
+    let name = attempt(parseName)(stream).parsed;
     if (name === null) {
         name = "";
     }
@@ -180,11 +183,11 @@ const parseLambda = (stream) => {
     if (body === null) {
         throw 'no lambda body found!';
     }
-    return {parsed:{type:func, name:name, args:args, body:body}, stream:stream};
+    return {parsed:{type:"func", name:name, args:args, body:body}, stream:stream};
 }
 
 /* takes in stream, outputs parsed item or null */
 const parseExpr = or(parseBuiltin, or(parseIdent, or(parseInteger, attempt(parens(parseLambda)))));
 
 /* takes in stream, outputs parsed items */
-export const parseExprs = (stream) => many(parseExpr);
+export const parseExprs = many(parseExpr);
