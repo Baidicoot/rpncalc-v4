@@ -65,7 +65,7 @@ const attempt = (parser) => (stream) => {
 const or = (a, b) => (stream) => {
     let aout = a(stream);
     if (aout.parsed === null) {
-        return b(stream);
+        return b(aout.stream);
     } else {
         return aout;
     }
@@ -74,15 +74,15 @@ const or = (a, b) => (stream) => {
 /* (parser) */
 const parens = (parser) => (stream) => {
     let a = parseSyntax("(", stream);
-    if (a === null) {
-        return {parsed:null, stream:stream};
+    if (a.parsed === null) {
+        return {parsed:null, stream:a.stream};
     }
-    let dat = parser(stream);
-    a = parseSyntax(")", stream);
-    if (a === null) {
+    let dat = parser(a.stream);
+    a = parseSyntax(")", dat.stream);
+    if (a.parsed === null) {
         throw 'mismatched parens!';
     }
-    return dat;
+    return {parsed:dat.parsed, stream:a.stream};
 }
 
 /* [parser] */
@@ -90,6 +90,7 @@ const many = (parser) => (stream) => {
     let parsed = [];
     for (let i = parser(stream); i.parsed !== null; i = parser(stream)) {
         parsed.push(i.parsed);
+        stream = i.stream;
     }
     return {parsed:parsed, stream:stream};
 }
@@ -160,30 +161,31 @@ const parseSyntax = (syntax, stream) => {
 const parseName = (stream) => {
     let id = parseIdent(stream);
     if (id.parsed === null) {
-        return {parsed:null, stream:stream};
+        return {parsed:null, stream:id.stream};
     }
-    let syn = parseSyntax(";", stream);
+    let syn = parseSyntax(";", id.stream);
     if (syn.parsed === null) {
         throw 'could not parse name!'
     }
-    return {parsed:id.parsed.val, stream:stream};
+    return {parsed:id.parsed.val, stream:syn.stream};
 }
 
 /* takes in stream, outputs parsed item or null - FAILABLE */
 const parseLambda = (stream) => {
-    let name = attempt(parseName)(stream).parsed;
-    if (name === null) {
-        name = "";
+    let name = attempt(parseName)(stream);
+    if (name.parsed === null) {
+        name.parsed = "";
     }
-    let args = many(parseIdent)(stream).parsed;
-    if (parseSyntax("->", stream).parsed === null) {
+    let args = many(parseIdent)(name.stream);
+    let syn = parseSyntax("->", args.stream);
+    if (syn.parsed === null) {
         throw 'no lambda body found!';
     }
-    let body = parseExprs(stream).parsed; // .parsed should never be null, but anyway...
-    if (body === null) {
+    let body = parseExprs(syn.stream); // .parsed should never be null, but anyway...
+    if (body.parsed === null) {
         throw 'no lambda body found!';
     }
-    return {parsed:{type:"func", name:name, args:args, body:body}, stream:stream};
+    return {parsed:{type:"func", name:name.parsed, args:args.parsed, body:body.parsed}, stream:body.stream};
 }
 
 /* takes in stream, outputs parsed item or null */
