@@ -9,6 +9,7 @@ convert:
 {type:"int",val:1},
 {type:"int",val:2},
 {type:"ident",name:"+"},
+{type:"syntax",val:"'"},
 {type:"syntax",val:"("},
 {type:"ident",name:"name"},
 {type:"syntax",val:";"},
@@ -28,11 +29,12 @@ to:
     {type:"int", val:1},
     {type:"int", val:2},
     {type:"builtin", op:"+"},
-    {type:"func", name:"name", args:["args"], body:[
-        {type:"int", val:1},
-        {type:"ident", val:"args"},
-        {type:"builtin", op:"+"},
-        }]},
+    {type:"push", elem:
+            {type:"func", name:"name", args:["args"], body:[
+            {type:"int", val:1},
+            {type:"ident", val:"args"},
+            {type:"builtin", op:"+"},
+    }}]}}
 ]
 
 EXPORTED FUNCTIONS:
