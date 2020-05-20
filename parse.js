@@ -185,7 +185,7 @@ const parseLambda = (stream) => {
     if (body.parsed === null) {
         throw 'no lambda body found!';
     }
-    return {parsed:{type:"func", name:name.parsed, args:args.parsed, body:body.parsed}, stream:body.stream};
+    return {parsed:{type:"func", name:name.parsed, args:args.parsed.map(x => x.val), body:body.parsed}, stream:body.stream};
 }
 
 /* takes in stream, outputs parsed item or null */
