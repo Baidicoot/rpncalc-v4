@@ -171,6 +171,19 @@ const parseName = (stream) => {
 }
 
 /* takes in stream, outputs parsed item or null - FAILABLE */
+const parsePush = (stream) => {
+    let syn = attempt(parseSyntax("'"));
+    if (syn.parsed === null) {
+        return {parsed:null, stream:syn.stream};
+    }
+    let id = parseIdent(syn.stream);
+    if (id.parsed === null) {
+        return {parsed:null, stream:id.stream};
+    }
+    return {parsed:{type:"push", elem:id.parsed}, stream:id.stream};
+}
+
+/* takes in stream, outputs parsed item or null - FAILABLE */
 const parseLambda = (stream) => {
     let name = attempt(parseName)(stream);
     if (name.parsed === null) {
@@ -189,7 +202,7 @@ const parseLambda = (stream) => {
 }
 
 /* takes in stream, outputs parsed item or null */
-const parseExpr = or(parseBuiltin, or(parseIdent, or(parseInteger, attempt(parens(parseLambda)))));
+const parseExpr = or(parseBuiltin, or(parseIdent, or(parseInteger, or(parsePush, attempt(parens(parseLambda))))));
 
 /* takes in stream, outputs parsed items */
 export const parseExprs = many(parseExpr);
