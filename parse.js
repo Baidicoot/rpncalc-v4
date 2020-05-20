@@ -21,7 +21,7 @@ convert:
 ]
 
 (for c+p)
-[{type:"int",val:1},{type:"int",val:2},{type:"ident",name:"+"},{type:"syntax",val:"("},{type:"ident",name:"name"},{type:"syntax",val:";"},{type:"ident",name:"args"},{type:"syntax",val:"->"},{type:"int",val:2},{type:"ident",name:"args"},{type:"ident",name:"+"},{type:"syntax",val:")"}]
+[{type:"int",val:1},{type:"int",val:2},{type:"ident",name:"+"},{type:"syntax",val:"'"},{type:"syntax",val:"("},{type:"ident",name:"name"},{type:"syntax",val:";"},{type:"ident",name:"args"},{type:"syntax",val:"->"},{type:"int",val:2},{type:"ident",name:"args"},{type:"ident",name:"+"},{type:"syntax",val:")"}]
 
 to:
 [
@@ -73,12 +73,12 @@ const or = (a, b) => (stream) => {
 
 /* (parser) */
 const parens = (parser) => (stream) => {
-    let a = parseSyntax("(", stream);
+    let a = parseSyntax("(")(stream);
     if (a.parsed === null) {
         return {parsed:null, stream:a.stream};
     }
     let dat = parser(a.stream);
-    a = parseSyntax(")", dat.stream);
+    a = parseSyntax(")")(dat.stream);
     if (a.parsed === null) {
         throw 'mismatched parens!';
     }
@@ -141,7 +141,7 @@ const parseInteger = (stream) => {
 }
 
 /* takes in stream, outputs parsed item or null */
-const parseSyntax = (syntax, stream) => {
+const parseSyntax = (syntax) => (stream) => {
     let e = stream[0];
     if (e === undefined) {
         return {parsed:null, stream:stream};
@@ -163,7 +163,7 @@ const parseName = (stream) => {
     if (id.parsed === null) {
         return {parsed:null, stream:id.stream};
     }
-    let syn = parseSyntax(";", id.stream);
+    let syn = parseSyntax(";")(id.stream);
     if (syn.parsed === null) {
         throw 'could not parse name!'
     }
@@ -172,11 +172,12 @@ const parseName = (stream) => {
 
 /* takes in stream, outputs parsed item or null - FAILABLE */
 const parsePush = (stream) => {
-    let syn = attempt(parseSyntax("'"));
+    let syn = attempt(parseSyntax("'"))(stream);
+    console.log(syn);
     if (syn.parsed === null) {
         return {parsed:null, stream:syn.stream};
     }
-    let id = parseIdent(syn.stream);
+    let id = parseExpr(syn.stream);
     if (id.parsed === null) {
         return {parsed:null, stream:id.stream};
     }
@@ -190,7 +191,7 @@ const parseLambda = (stream) => {
         name.parsed = "";
     }
     let args = many(parseIdent)(name.stream);
-    let syn = parseSyntax("->", args.stream);
+    let syn = parseSyntax("->")(args.stream);
     if (syn.parsed === null) {
         throw 'no lambda body found!';
     }
@@ -205,4 +206,4 @@ const parseLambda = (stream) => {
 const parseExpr = or(parseBuiltin, or(parseIdent, or(parseInteger, or(parsePush, attempt(parens(parseLambda))))));
 
 /* takes in stream, outputs parsed items */
-export const parseExprs = many(parseExpr);
+const parseExprs = many(parseExpr);
