@@ -38,7 +38,7 @@ to:
 ]
 
 EXPORTED FUNCTIONS:
-parse - takes in tokenstream, outputs AST
+parseExprs - takes in tokenstream, outputs AST
 */
 
 const builtin = [
@@ -209,4 +209,4 @@ const parseLambda = (stream) => {
 const parseExpr = or(parseBuiltin, or(parseIdent, or(parseInteger, or(parsePush, attempt(parens(parseLambda))))));
 
 /* takes in stream, outputs parsed items */
-const parseExprs = many(parseExpr);
+export const parseExprs = many(parseExpr);

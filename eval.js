@@ -11,26 +11,28 @@ types of object on list:
 {type:"closure", args:[], func:{}}
 {type:"pair", val:{fst:{}, snd:{}}}
 
+[{type:"int", val:1},{type:"int", val:1},{type:"builtin", op:"+"}]
+
 exported functions:
-makeEval - lifts a function to a function definition object
+addDefn - adds a builtin function
 doStep - consumes instruction stream, stack, outputs stack
 execRPN - consumes scope, instruction stream, outputs stack
 */
 
-const makeEval = (sign, defn) => {
+const makeEval = (sign, defnarg) => {
     if (typeof sign === "number") {
-        return {nargs:sign, defn:defn};
+        return {nargs:sign, defn:defnarg};
     } else {
         return {nargs:sign.length, defn:(scope, args) => {
                 let stripped = [];
                 for (let i = 0; i < sign.length; i++) {
-                    if (args[i].type === sign[i].type) {
+                    if (args[i].type === sign[i]) {
                         stripped.push(args[i].val);
                     } else {
                         throw 'typeerror'
                     }
                 }
-                defn(scope, stripped);
+                return defnarg(scope, stripped);
             }
         }
     }
@@ -64,7 +66,7 @@ const fst = (args) => [args[0].fst];
 
 const snd = (args) => [args[0].snd];
 
-const builtinDefn = {
+let builtinDefn = {
     "+":        makeEval(["int", "int"], add),
     "-":        makeEval(["int", "int"], sub),
     "/":        makeEval(["int", "int"], div),
@@ -73,6 +75,10 @@ const builtinDefn = {
     "pair":     makeEval(2, pair),
     "fst":      makeEval(["pair"], fst),
     "snd":      makeEval(["pair"], snd)
+}
+
+export const addDefn = (name, sign, func) => {
+    builtinDefn[name] = makeEval(sign, func);
 }
 
 const makeLambda = (lambda) => (scope, args) => {
@@ -97,7 +103,7 @@ const makeObj = (elem) => {
 const giveArg = (closure, arg, scope) => {
     closure.args.push(arg);
     if (closure.args.length === closure.func.nargs) {
-        return closure.defn(scope, closure.args)
+        return closure.func.defn(scope, closure.args)
     } else {
         return [closure];
     }
@@ -105,10 +111,13 @@ const giveArg = (closure, arg, scope) => {
 
 const apply = (elem, stack) => {
     if (elem.type === "closure") {
-        let out = elem.giveArg(elem, stack.stack.pop(), stack.scope);
+        let out = giveArg(elem, stack.stack.pop(), stack.scope);
         applyMany(out, stack);
+    } else if (elem.type === "ident") {
+        let id = stack.scope[elem.name];
+        apply(id, stack);
     } else {
-        stack.push(elem);
+        stack.stack.push(elem);
     }
 }
 
@@ -118,9 +127,22 @@ const applyMany = (outstack, stack) => {
     }
 }
 
-const doStep = (ins, stack) => {
-    let elem = makeObj(ins.pop());
-    apply(elem, stack);
+const pushS = (elem, stack) => {
+    if (elem.type === "ident") {
+        let id = stack.scope[elem.name];
+        stack.stack.push(id);
+    } else {
+        stack.stack.push(elem);
+    }
+}
+
+export const doStep = (ins, stack) => {
+    let instruction = ins.shift();
+    if (instruction.type === "push") {
+        pushS(makeObj(instruction.elem), stack);
+    } else {
+        apply(makeObj(instruction), stack);
+    }
 }
 
 const execRPN = (scope, ins) => {
@@ -128,4 +150,5 @@ const execRPN = (scope, ins) => {
     while (ins.length > 0) {
         doStep(ins, stack);
     }
+    return stack;
 }
