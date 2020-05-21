@@ -48,7 +48,8 @@ const builtin = [
     "/",
     "typeof",
     "pair",
-    "unpair"
+    "fst",
+    "snd"
 ];
 
 /* make parser safe */
