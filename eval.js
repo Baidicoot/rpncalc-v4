@@ -149,7 +149,7 @@ const doStep = (ins, stack) => {
     if (instruction.type === "push") {
         pushS(makeObj(instruction.elem), stack);
     } else if (instruction.type === "defn") {
-        defn(ins.defn, ins.ident, stack);
+        defn(instruction.defn, instruction.ident, stack);
     } else {
         apply(makeObj(instruction), stack);
     }
