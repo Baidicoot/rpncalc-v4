@@ -13,6 +13,8 @@ types of object on list:
 
 [{type:"int", val:1},{type:"int", val:1},{type:"builtin", op:"+"}]
 
+[{type:"int", val:1},{type:"int", val:1},{type:"func", args:["a"], body:[{type:"ident", val:"a"},{type:"int", val:1},{type:"builtin", op:"+"}]}]
+
 exported functions:
 addDefn - adds a builtin function
 doStep - consumes instruction stream, stack, outputs stack
@@ -77,16 +79,18 @@ let builtinDefn = {
     "snd":      makeEval(["pair"], snd)
 }
 
-export const addDefn = (name, sign, func) => {
+const addDefn = (name, sign, func) => {
     builtinDefn[name] = makeEval(sign, func);
 }
 
-const makeLambda = (lambda) => (scope, args) => {
-    let newscope = Object.create(scope); // I am so sorry...
-    for (let i = 0; i < lambda.args.length; i++) {
-        newscope[lambda.args[i]] = args[i];
-    }
-    return execRPN(newscope, lambda.body);
+const makeLambda = (lambda) => {
+    return {nargs:lambda.args.length, defn:(scope, args) => {
+        let newscope = Object.create(scope); // I am so sorry...
+        for (let i = 0; i < lambda.args.length; i++) {
+            newscope[lambda.args[i]] = args[i];
+        }
+        return execRPN(newscope, lambda.body).stack;
+    }};
 }
 
 const makeObj = (elem) => {
@@ -103,7 +107,7 @@ const makeObj = (elem) => {
 const giveArg = (closure, arg, scope) => {
     closure.args.push(arg);
     if (closure.args.length === closure.func.nargs) {
-        return closure.func.defn(scope, closure.args)
+        return closure.func.defn(scope, closure.args);
     } else {
         return [closure];
     }
@@ -114,7 +118,7 @@ const apply = (elem, stack) => {
         let out = giveArg(elem, stack.stack.pop(), stack.scope);
         applyMany(out, stack);
     } else if (elem.type === "ident") {
-        let id = stack.scope[elem.name];
+        let id = stack.scope[elem.val];
         apply(id, stack);
     } else {
         stack.stack.push(elem);
@@ -136,10 +140,16 @@ const pushS = (elem, stack) => {
     }
 }
 
-export const doStep = (ins, stack) => {
+const defn = (elem, name, stack) => {
+    stack.scope[name] = makeObj(elem);
+}
+
+const doStep = (ins, stack) => {
     let instruction = ins.shift();
     if (instruction.type === "push") {
         pushS(makeObj(instruction.elem), stack);
+    } else if (instruction.type === "defn") {
+        defn(ins.defn, ins.ident, stack);
     } else {
         apply(makeObj(instruction), stack);
     }

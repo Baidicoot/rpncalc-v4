@@ -22,7 +22,7 @@ convert:
 ]
 
 (for c+p)
-[{type:"int",val:1},{type:"int",val:2},{type:"ident",name:"+"},{type:"syntax",val:"'"},{type:"syntax",val:"("},{type:"ident",name:"name"},{type:"syntax",val:";"},{type:"ident",name:"args"},{type:"syntax",val:"->"},{type:"int",val:2},{type:"ident",name:"args"},{type:"ident",name:"+"},{type:"syntax",val:")"}]
+[{type:"int",val:1},{type:"int",val:2},{type:"ident",name:"+"},{type:"syntax",val:"'"},{type:"syntax",val:"("},{type:"ident",name:"name"},{type:"ident",name:"args"},{type:"syntax",val:"->"},{type:"int",val:2},{type:"ident",name:"args"},{type:"ident",name:"+"},{type:"syntax",val:")"}]
 
 to:
 [
@@ -30,7 +30,7 @@ to:
     {type:"int", val:2},
     {type:"builtin", op:"+"},
     {type:"push", elem:
-            {type:"func", name:"name", args:["args"], body:[
+            {type:"func", args:["args"], body:[
             {type:"int", val:1},
             {type:"ident", val:"args"},
             {type:"builtin", op:"+"},
@@ -190,9 +190,6 @@ const parsePush = (stream) => {
 /* takes in stream, outputs parsed item or null - FAILABLE */
 const parseLambda = (stream) => {
     let name = attempt(parseName)(stream);
-    if (name.parsed === null) {
-        name.parsed = "";
-    }
     let args = many(parseIdent)(name.stream);
     let syn = parseSyntax("->")(args.stream);
     if (syn.parsed === null) {
@@ -202,7 +199,12 @@ const parseLambda = (stream) => {
     if (body.parsed === null) {
         throw 'no lambda body found!';
     }
-    return {parsed:{type:"func", name:name.parsed, args:args.parsed.map(x => x.val), body:body.parsed}, stream:body.stream};
+    let func = {type:"func", args:args.parsed.map(x => x.val), body:body.parsed};
+    if (name.parsed === null) {
+        return {parsed:func, stream:body.stream};
+    } else {
+        return {type:"defn", ident:name.parsed, defn:func};
+    }
 }
 
 /* takes in stream, outputs parsed item or null */
