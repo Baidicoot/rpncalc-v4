@@ -40,64 +40,18 @@ const makeEval = (sign, defnarg) => {
     }
 }
 
-const add = (_, args) => {
-    return [{type:"int", val:args[0] + args[1]}];
+const makeBuiltin = (sign, defnarg) => {
+    return {type:"closure", args:[], func:makeEval(sign, defnarg)};
 }
 
-const sub = (_, args) => {
-    return [{type:"int", val:args[1] - args[0]}];
-}
-
-const div = (_, args) => {
-    return [{type:"int", val:args[1] / args[0]}];
-}
-
-const mult = (_, args) => {
-    return [{type:"int", val:args[0] * args[1]}];
-}
-
-const type = (_, args) => {
-    return [{type:"string", val:args[0].type}];
-}
-
-const pair = (_, args) => {
-    return [{type:"pair", val:{fst:args[0], snd:args[1]}}];
-}
-
-const fst = (_, args) => [args[0].fst];
-
-const snd = (_, args) => [args[0].snd];
-
-const eq = (_, args) => {
-    if (args[0].type === args[1].type && args[0].val === args[1].val) {
-        return [{type:"ident", val:"true"}];
-    } else {
-        return [{type:"ident", val:"false"}];
-    }
-}
-
-const stop = (a, b) => {
-    return [{type:"string", val:"stop"}];
-}
-
-let builtinDefn = {
-    "+":        makeEval(["int", "int"], add),
-    "-":        makeEval(["int", "int"], sub),
-    "/":        makeEval(["int", "int"], div),
-    "*":        makeEval(["int", "int"], mult),
-    "==":       makeEval(2, eq),
-    "typeof":   makeEval(1, type),
-    "pair":     makeEval(2, pair),
-    "fst":      makeEval(["pair"], fst),
-    "snd":      makeEval(["pair"], snd)
-}
+let builtinDefn = {};
 
 export const addDefn = (name, sign, func) => {
-    builtinDefn[name] = makeEval(sign, func);
+    builtinDefn[name] = makeBuiltin(sign, func);
 }
 
 export const addRPNASTDefn = (name, ast) => {
-    builtinDefn[name] = makeLambda(ast);
+    builtinDefn[name] = makeObj(ast);
 }
 
 const makeLambda = (lambda) => {
@@ -137,7 +91,7 @@ const lookupScope = (name, scope) => {
     }
     n = builtinDefn[name];
     if (n) {
-        return {type:"closure", args:[], func:n};
+        return cloneElem(n);
     } else {
         throw "var " + n + " not in scope"
     }
@@ -189,7 +143,7 @@ const defn = (elem, name, stack) => {
     stack.scope[name] = makeObj(elem);
 }
 
-export const doStep = (ins, stack) => {
+const doStep = (ins, stack) => {
     let instruction = ins.shift();
     if (instruction.type === "push") {
         pushS(makeObj(instruction.elem), stack);

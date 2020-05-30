@@ -48,7 +48,6 @@ const attempt = (parser) => (stream) => {
         let out = parser(stream);
         return out;
     } catch(err) {
-        console.log(err);
         return {parsed:null,stream:streamclone};
     }
 }
