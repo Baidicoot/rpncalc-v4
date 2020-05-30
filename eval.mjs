@@ -64,22 +64,36 @@ const pair = (_, args) => {
     return [{type:"pair", val:{fst:args[0], snd:args[1]}}];
 }
 
-const fst = (args) => [args[0].fst];
+const fst = (_, args) => [args[0].fst];
 
-const snd = (args) => [args[0].snd];
+const snd = (_, args) => [args[0].snd];
+
+const tru = (_, args) => [args[0]];
+const fls = (_, args) => [args[1]];
+
+const eq = (_, args) => {
+    if (args[0].type === args[1].type && args[0].val === args[1].val) {
+        return [{type:"ident", val:"true"}];
+    } else {
+        return [{type:"ident", val:"false"}];
+    }
+}
 
 let builtinDefn = {
     "+":        makeEval(["int", "int"], add),
     "-":        makeEval(["int", "int"], sub),
     "/":        makeEval(["int", "int"], div),
     "*":        makeEval(["int", "int"], mult),
+    "true":     makeEval(2, tru),
+    "false":    makeEval(2, fls),
+    "==":       makeEval(2, eq),
     "typeof":   makeEval(1, type),
     "pair":     makeEval(2, pair),
     "fst":      makeEval(["pair"], fst),
     "snd":      makeEval(["pair"], snd)
 }
 
-const addDefn = (name, sign, func) => {
+export const addDefn = (name, sign, func) => {
     builtinDefn[name] = makeEval(sign, func);
 }
 
@@ -94,13 +108,35 @@ const makeLambda = (lambda) => {
 }
 
 const makeObj = (elem) => {
-    if (elem.type === "builtin") {
-        let fn = builtinDefn[elem.op];
-        return {type:"closure", args:[], func:fn};
-    } else if (elem.type === "func") {
+    if (elem.type === "func") {
         return {type:"closure", args:[], func:makeLambda(elem)};
     } else {
         return elem;
+    }
+}
+
+const cloneElem = (elem) => {
+    if (elem.type === "closure") {
+        let argsClone = [];
+        for (let i = 0; i < elem.args.length; i++) {
+            argsClone.push(cloneElem(elem.args[i]));
+        }
+        return {type:"closure", args:argsClone, func:elem.func};
+    } else {
+        return elem;
+    }
+}
+
+const lookupScope = (name, scope) => {
+    let n = scope[name];
+    if (n) {
+        return cloneElem(n);
+    }
+    n = builtinDefn[name];
+    if (n) {
+        return {type:"closure", args:[], func:n};
+    } else {
+        throw "var " + n + " not in scope"
     }
 }
 
@@ -115,10 +151,14 @@ const giveArg = (closure, arg, scope) => {
 
 const apply = (elem, stack) => {
     if (elem.type === "closure") {
-        let out = giveArg(elem, stack.stack.pop(), stack.scope);
-        applyMany(out, stack);
+        if (stack.stack.length > 0) {
+            let out = giveArg(elem, stack.stack.pop(), stack.scope);
+            applyMany(out, stack);
+        } else {
+            stack.stack.push(elem);
+        }
     } else if (elem.type === "ident") {
-        let id = stack.scope[elem.val];
+        let id = lookupScope(elem.val, stack.scope);
         apply(id, stack);
     } else {
         stack.stack.push(elem);
@@ -133,7 +173,7 @@ const applyMany = (outstack, stack) => {
 
 const pushS = (elem, stack) => {
     if (elem.type === "ident") {
-        let id = stack.scope[elem.name];
+        let id = lookupScope(elem.val, stack.scope);
         stack.stack.push(id);
     } else {
         stack.stack.push(elem);
@@ -144,7 +184,7 @@ const defn = (elem, name, stack) => {
     stack.scope[name] = makeObj(elem);
 }
 
-const doStep = (ins, stack) => {
+export const doStep = (ins, stack) => {
     let instruction = ins.shift();
     if (instruction.type === "push") {
         pushS(makeObj(instruction.elem), stack);
@@ -155,7 +195,8 @@ const doStep = (ins, stack) => {
     }
 }
 
-const execRPN = (scope, ins) => {
+export const execRPN = (scope, i) => {
+    let ins = JSON.parse(JSON.stringify(i));
     let stack = {scope:scope, stack:[]};
     while (ins.length > 0) {
         doStep(ins, stack);

@@ -41,17 +41,6 @@ EXPORTED FUNCTIONS:
 parseExprs - takes in tokenstream, outputs AST
 */
 
-const builtin = [
-    "+",
-    "-",
-    "*",
-    "/",
-    "typeof",
-    "pair",
-    "fst",
-    "snd"
-];
-
 /* make parser safe */
 const attempt = (parser) => (stream) => {
     let streamclone = [...stream];
@@ -96,23 +85,6 @@ const many = (parser) => (stream) => {
         stream = i.stream;
     }
     return {parsed:parsed, stream:stream};
-}
-
-/* takes in stream, outputs {parsed, stream} */
-const parseBuiltin = (stream) => {
-    let e = stream[0];
-    if (e === undefined) {
-        return {parsed:null, stream:stream};
-    }
-    if (e.type !== "ident") {
-        return {parsed:null, stream:stream};
-    }
-    if (builtin.includes(e.name)) {
-        stream.shift();
-        return {parsed:{type:"builtin", val:e.name}, stream:stream};
-    } else {
-        return {parsed:null, stream:stream};
-    }
 }
 
 /* takes in stream, outputs parsed item or null */
@@ -173,10 +145,24 @@ const parseName = (stream) => {
     return {parsed:id.parsed.val, stream:syn.stream};
 }
 
+const parseString = (stream) => {
+    
+    let syn = attempt(parseSyntax("\""))(stream);
+    if (syn.parsed === null) {
+        return {parsed:null, stream:syn.stream};
+    }
+    let id = parseIdent(syn.stream);
+    if (id.parsed === null) {
+        return {parsed:null, stream:id.stream};
+    }
+    return {parsed:{type:"string", val:id.parsed.val}, stream:id.stream};
+    
+    //return {parsed:null, stream:stream};
+}
+
 /* takes in stream, outputs parsed item or null - FAILABLE */
 const parsePush = (stream) => {
     let syn = attempt(parseSyntax("'"))(stream);
-    console.log(syn);
     if (syn.parsed === null) {
         return {parsed:null, stream:syn.stream};
     }
@@ -203,12 +189,12 @@ const parseLambda = (stream) => {
     if (name.parsed === null) {
         return {parsed:func, stream:body.stream};
     } else {
-        return {type:"defn", ident:name.parsed, defn:func};
+        return {parsed:{type:"defn", ident:name.parsed, defn:func}, stream:body.stream};
     }
 }
 
 /* takes in stream, outputs parsed item or null */
-const parseExpr = or(parseBuiltin, or(parseIdent, or(parseInteger, or(parsePush, attempt(parens(parseLambda))))));
+const parseExpr = or(parseString, or(parseIdent, or(parseInteger, or(parsePush, attempt(parens(parseLambda))))));
 
 /* takes in stream, outputs parsed items */
 export const parseExprs = many(parseExpr);
