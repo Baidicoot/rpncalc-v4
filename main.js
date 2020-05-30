@@ -16,6 +16,8 @@ const show = (elem) => {
         return "(args: {" + prettyprint(elem.args) + "} of " + elem.func.nargs + ")"
     } else if (elem.type === "string") {
         return elem.val
+    } else if (elem.type === "array") {
+        return "[" + prettyprint(elem.val) + "]"
     }
 }
 
@@ -47,5 +49,6 @@ submit.onclick = (event) => {
         outbox.innerHTML = "failed to execute";
         return;
     }
+    console.log(out);
     outbox.innerHTML = prettyprint(out.stack);
 }

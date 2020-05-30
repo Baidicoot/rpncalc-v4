@@ -1,4 +1,4 @@
-import {addDefn, addRPNASTDefn} from './eval.mjs';
+import {addDefn, addRPNASTDefn, makeFn} from './eval.mjs';
 import {parseExprs} from './parse.mjs';
 import {tokenize} from './token.mjs';
 
@@ -43,7 +43,7 @@ const type = (_, args) => {
 }
 
 const pair = (_, args) => {
-    return [{type:"pair", val:{fst:args[0], snd:args[1]}}];
+    return [{type:"pair", val:{fst:args[1], snd:args[0]}}];
 }
 
 const fst = (_, args) => [args[0].fst];
@@ -58,6 +58,18 @@ const eq = (_, args) => {
     }
 }
 
+const arr = (_, args) => {
+    return [makeFn(args[0], (_, args) => {return [{type:"array", val:args}]})];
+}
+
+const index = (_, args) => {
+    return [args[1][args[0]]];
+}
+
+const len = (_, args) => {
+    return [{type:"int", val:args[0].length}];
+}
+
 addDefn("+", ["int", "int"], add);
 addDefn("-", ["int", "int"], sub);
 addDefn("/", ["int", "int"], div);
@@ -69,9 +81,14 @@ addDefn("typeof", 1, type);
 addDefn("pair", 2, pair);
 addDefn("fst", ["pair"], fst);
 addDefn("snd", ["pair"], snd);
+addDefn("arr", ["int"], arr);
+addDefn("!!", ["int", "array"], index);
+addDefn("len", ["array"], len);
+addRPNDefn("unit", "(-> 0 arr)");
+addRPNDefn("mono", "(-> 1 arr)");
 addRPNDefn("true", "(a b -> a)");
 addRPNDefn("false", "(a b -> b)");
 addRPNDefn("stop", "(-> \"stop)");
 addRPNDefn("id", "(a -> a)");
 addRPNDefn("inv", "(x -> 1 x /)");
-addRPNDefn("fold", "(fn acc x -> '(-> x acc fn 'fn fold) '(-> acc) 'x \"stop ==)");
+addRPNDefn("fold", "(x acc fn -> '(-> acc) '(-> x acc fn 'fn fold) 'x \"stop ==)");

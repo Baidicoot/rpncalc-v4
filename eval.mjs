@@ -40,14 +40,14 @@ const makeEval = (sign, defnarg) => {
     }
 }
 
-const makeBuiltin = (sign, defnarg) => {
+export const makeFn = (sign, defnarg) => {
     return {type:"closure", args:[], func:makeEval(sign, defnarg)};
 }
 
 let builtinDefn = {};
 
 export const addDefn = (name, sign, func) => {
-    builtinDefn[name] = makeBuiltin(sign, func);
+    builtinDefn[name] = makeFn(sign, func);
 }
 
 export const addRPNASTDefn = (name, ast) => {
@@ -56,9 +56,9 @@ export const addRPNASTDefn = (name, ast) => {
 
 const makeLambda = (lambda) => {
     return {nargs:lambda.args.length, defn:(scope, args) => {
-        let newscope = Object.create(scope); // I am so sorry...
+        let newscope = Object.create(scope);
         for (let i = 0; i < lambda.args.length; i++) {
-            newscope[lambda.args[i]] = args[i];
+            newscope[lambda.args[i]] = args[args.length-1-i];
         }
         return execRPN(newscope, lambda.body).stack;
     }};

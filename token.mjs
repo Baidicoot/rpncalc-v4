@@ -36,11 +36,11 @@ export function tokenize(input) {
         }
     }
     */
-    let splitInput = inputWithAddedSpaces.split(" ");
+    let splitInput = inputWithAddedSpaces.split(" ").filter((s) => s !== "");
     let output = [];
     for(i = 0; i<splitInput.length; i++){
-        if(/^\d+$/.test(splitInput[i])){                                    //  didn't need /[0-9]/, but that would be helpful to stop numbers from being in identifiers, but the ability to call a function "function_add_1" is easier to type than "function_add_one"
-            output.push({type: "int", val:parseInt(splitInput[i])});               //      also, /[a-zA-Z]/ wasn't necessary as my code uses anything that isn't `;() or ->
+        if(!isNaN(splitInput[i])){                                   //  didn't need /[0-9]/, but that would be helpful to stop numbers from being in identifiers, but the ability to call a function "function_add_1" is easier to type than "function_add_one"
+            output.push({type: "int", val:Number(splitInput[i])});               //      also, /[a-zA-Z]/ wasn't necessary as my code uses anything that isn't `;() or ->
         } else if(syntax.test(splitInput[i]) || splitInput[i] === "->"){//  needs a || as -> wasn't included in the syntax regexp. it wasn't in because -> uses two characters so i wanted to have separate code for it. (also because regexps are confusing)
             output.push({type: "syntax", val:splitInput[i]});
         } else if(splitInput[i] != '') {                                //  if syntax is next to the end of the string or other bits of syntax the two spaces are in inputWithAddedSpaces so .split returns '' as one element. this makes sure that it is not read as an identifier
