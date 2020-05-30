@@ -68,9 +68,6 @@ const fst = (_, args) => [args[0].fst];
 
 const snd = (_, args) => [args[0].snd];
 
-const tru = (_, args) => [args[0]];
-const fls = (_, args) => [args[1]];
-
 const eq = (_, args) => {
     if (args[0].type === args[1].type && args[0].val === args[1].val) {
         return [{type:"ident", val:"true"}];
@@ -79,13 +76,15 @@ const eq = (_, args) => {
     }
 }
 
+const stop = (a, b) => {
+    return [{type:"string", val:"stop"}];
+}
+
 let builtinDefn = {
     "+":        makeEval(["int", "int"], add),
     "-":        makeEval(["int", "int"], sub),
     "/":        makeEval(["int", "int"], div),
     "*":        makeEval(["int", "int"], mult),
-    "true":     makeEval(2, tru),
-    "false":    makeEval(2, fls),
     "==":       makeEval(2, eq),
     "typeof":   makeEval(1, type),
     "pair":     makeEval(2, pair),
@@ -95,6 +94,10 @@ let builtinDefn = {
 
 export const addDefn = (name, sign, func) => {
     builtinDefn[name] = makeEval(sign, func);
+}
+
+export const addRPNASTDefn = (name, ast) => {
+    builtinDefn[name] = makeLambda(ast);
 }
 
 const makeLambda = (lambda) => {
@@ -151,7 +154,9 @@ const giveArg = (closure, arg, scope) => {
 
 const apply = (elem, stack) => {
     if (elem.type === "closure") {
-        if (stack.stack.length > 0) {
+        if (elem.func.nargs === 0) {
+            applyMany(elem.func.defn(stack.scope, []), stack);
+        } else if (stack.stack.length > 0) {
             let out = giveArg(elem, stack.stack.pop(), stack.scope);
             applyMany(out, stack);
         } else {

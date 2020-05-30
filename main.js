@@ -1,4 +1,4 @@
-import {execRPN} from './eval.mjs';
+import {execRPN, addRPNASTDefn} from './eval.mjs';
 import {parseExprs} from './parse.mjs';
 import {tokenize} from './token.mjs';
 
@@ -28,6 +28,25 @@ const prettyprint = (out) => {
     }
     return str;
 }
+
+const addRPNBuiltin = (name, def) => {
+    let toks = tokenize(def);
+    if (!toks) {
+        throw 'could not load builtin'
+    }
+    let ast = parseExprs(toks);
+    if (!ast.parsed) {
+        throw 'could not load builtin'
+    }
+    console.log(ast);
+    addRPNASTDefn(name, ast.parsed[0]);
+}
+
+addRPNBuiltin("true", "(a b -> a)");
+addRPNBuiltin("false", "(a b -> b)");
+addRPNBuiltin("stop", "(-> \"stop)");
+addRPNBuiltin("id", "(a -> a)");
+addRPNBuiltin("fold", "(fn acc x -> '(-> x acc fn 'fn fold) '(-> acc) 'x \"stop ==)");
 
 submit.onclick = (event) => {
     const input = inbox.value;
