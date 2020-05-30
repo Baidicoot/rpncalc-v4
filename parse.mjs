@@ -172,10 +172,21 @@ const parsePush = (stream) => {
     return {parsed:{type:"push", elem:id.parsed}, stream:id.stream};
 }
 
+const parseDefn = (stream) => {
+    let name = parseName(stream);
+    if (name.parsed === null) {
+        return {parsed:null, stream:name.stream};
+    }
+    let expr = parseExpr(stream);
+    if (expr.parsed === null) {
+        return {parsed:null, stream:expr.stream};
+    }
+    return {parsed:{type:"defn", ident:name.parsed, defn:expr.parsed}, stream:expr.stream}
+}
+
 /* takes in stream, outputs parsed item or null - FAILABLE */
 const parseLambda = (stream) => {
-    let name = attempt(parseName)(stream);
-    let args = many(parseIdent)(name.stream);
+    let args = many(parseIdent)(stream);
     let syn = parseSyntax("->")(args.stream);
     if (syn.parsed === null) {
         throw 'no lambda body found!';
@@ -184,16 +195,19 @@ const parseLambda = (stream) => {
     if (body.parsed === null) {
         throw 'no lambda body found!';
     }
-    let func = {type:"func", args:args.parsed.map(x => x.val), body:body.parsed};
-    if (name.parsed === null) {
-        return {parsed:func, stream:body.stream};
-    } else {
-        return {parsed:{type:"defn", ident:name.parsed, defn:func}, stream:body.stream};
-    }
+    return {parsed:{type:"func", args:args.parsed.map(x => x.val), body:body.parsed}, stream:body.stream};
 }
 
 /* takes in stream, outputs parsed item or null */
-const parseExpr = or(parseType, or(parseIdent, or(parseInteger, or(parsePush, attempt(parens(parseLambda))))));
+const parseExpr = or(
+    attempt(parens(parseDefn)), or(
+    attempt(parens(parseLambda)), or(
+    attempt(parseLambda), or(
+    parseType, or(
+    parseIdent, or(
+    parseInteger,
+    parsePush
+    ))))));
 
 /* takes in stream, outputs parsed items */
 export const parseExprs = many(parseExpr);

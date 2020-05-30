@@ -44,6 +44,7 @@ submit.onclick = (event) => {
         outbox.innerHTML = "incorrect syntax somewhere";
         return;
     }
+    console.log(ast.parsed);
     let out = execRPN({}, ast.parsed);
     if (!out) {
         outbox.innerHTML = "failed to execute";
