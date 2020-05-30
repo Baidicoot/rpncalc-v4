@@ -93,7 +93,7 @@ const lookupScope = (name, scope) => {
     if (n) {
         return cloneElem(n);
     } else {
-        throw "var " + n + " not in scope"
+        throw 'var "' + name + '" not in scope'
     }
 }
 
@@ -154,11 +154,24 @@ const doStep = (ins, stack) => {
     }
 }
 
+const showIns = (curr) => {
+    if (curr.type === "ident") {
+        return curr.val;
+    } else if (curr.type === "push") {
+        return "'" + showIns(curr.elem)
+    }
+}
+
 export const execRPN = (scope, i) => {
     let ins = JSON.parse(JSON.stringify(i));
     let stack = {scope:scope, stack:[]};
     while (ins.length > 0) {
-        doStep(ins, stack);
+        let curr = ins[0];
+        try {
+            doStep(ins, stack);
+        } catch (error) {
+            throw error + ' while executing "' + showIns(curr) + '"'
+        }
     }
     return stack;
 }

@@ -144,7 +144,7 @@ const parseName = (stream) => {
     return {parsed:id.parsed.val, stream:syn.stream};
 }
 
-const parseString = (stream) => {
+const parseType = (stream) => {
     
     let syn = attempt(parseSyntax("\""))(stream);
     if (syn.parsed === null) {
@@ -154,7 +154,7 @@ const parseString = (stream) => {
     if (id.parsed === null) {
         return {parsed:null, stream:id.stream};
     }
-    return {parsed:{type:"string", val:id.parsed.val}, stream:id.stream};
+    return {parsed:{type:"type", val:id.parsed.val}, stream:id.stream};
     
     //return {parsed:null, stream:stream};
 }
@@ -193,7 +193,7 @@ const parseLambda = (stream) => {
 }
 
 /* takes in stream, outputs parsed item or null */
-const parseExpr = or(parseString, or(parseIdent, or(parseInteger, or(parsePush, attempt(parens(parseLambda))))));
+const parseExpr = or(parseType, or(parseIdent, or(parseInteger, or(parsePush, attempt(parens(parseLambda))))));
 
 /* takes in stream, outputs parsed items */
 export const parseExprs = many(parseExpr);

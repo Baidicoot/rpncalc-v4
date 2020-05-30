@@ -39,7 +39,7 @@ const root = (_, args) => {
 }
 
 const type = (_, args) => {
-    return [{type:"string", val:args[0].type}];
+    return [{type:"type", val:args[0].type}];
 }
 
 const pair = (_, args) => {
@@ -84,11 +84,12 @@ addDefn("snd", ["pair"], snd);
 addDefn("arr", ["int"], arr);
 addDefn("!!", ["int", "array"], index);
 addDefn("len", ["array"], len);
-addRPNDefn("unit", "(-> 0 arr)");
-addRPNDefn("mono", "(-> 1 arr)");
+//addRPNDefn("unit", "(-> 0 arr)");
+//addRPNDefn("mono", "(-> 1 arr)");
+//addRPNDefn("unwrap", "(-> 0 !!)");
 addRPNDefn("true", "(a b -> a)");
 addRPNDefn("false", "(a b -> b)");
 addRPNDefn("stop", "(-> \"stop)");
-addRPNDefn("id", "(a -> a)");
+//addRPNDefn("id", "(a -> a)");
 addRPNDefn("inv", "(x -> 1 x /)");
 addRPNDefn("fold", "(x acc fn -> '(-> acc) '(-> x acc fn 'fn fold) 'x \"stop ==)");
