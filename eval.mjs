@@ -73,7 +73,9 @@ const makeObj = (elem) => {
 }
 
 const cloneElem = (elem) => {
-    if (elem.type === "closure") {
+    if (Array.isArray(elem)) {
+        return elem.map(cloneElem);
+    } if (elem.type === "closure") {
         let argsClone = [];
         for (let i = 0; i < elem.args.length; i++) {
             argsClone.push(cloneElem(elem.args[i]));
@@ -86,13 +88,11 @@ const cloneElem = (elem) => {
 
 const lookupScope = (name, scope) => {
     let n = scope[name];
-    console.log(n);
     if (n) {
         return cloneElem(n);
     }
     n = builtinDefn[name];
     if (n) {
-        console.log(name, n);
         return cloneElem(n);
     } else {
         throw 'var "' + name + '" not in scope'
@@ -136,12 +136,23 @@ const applyMany = (outstack, stack) => {
     }
 }
 
+const pushMany = (elems, stack) => {
+    for (let i = 0; i < elems.length; i++) {
+        pushS(elems[i], stack);
+    }
+}
+
 const pushS = (elem, stack) => {
-    if (elem.type === "ident") {
-        let id = lookupScope(elem.val, stack.scope);
-        stack.stack.push(id);
+    if (Array.isArray(elem)) {
+        pushMany(elem, stack);
     } else {
-        stack.stack.push(elem);
+        if (elem.type === "ident") {
+            let id = lookupScope(elem.val, stack.scope);
+            console.log(id);
+            pushS(id, stack);
+        } else {
+            stack.stack.push(elem);
+        }
     }
 }
 

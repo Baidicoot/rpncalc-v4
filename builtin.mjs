@@ -59,7 +59,7 @@ const eq = (_, args) => {
     }
 }
 
-const arr = (_, args) => {
+const tuple = (_, args) => {
     return [makeFn(args[0], (_, args) => {return [{type:"array", val:args}]})];
 }
 
@@ -90,7 +90,7 @@ addDefn("typeof", 1, type);
 addDefn("pair", 2, pair);
 addDefn("fst", ["pair"], fst);
 addDefn("snd", ["pair"], snd);
-addDefn("arr", ["int"], arr);
+addDefn("tuple", ["int"], tuple);
 addDefn("!!", ["int", "array"], index);
 addDefn("len", ["array"], len);
 addDefn("unsafeCoerce", 2, coerce);
@@ -102,4 +102,4 @@ addRPNDefn("false", "(a b -> b)");
 addRPNDefn("stop", "(-> \"stop)");
 //addRPNDefn("id", "(a -> a)");
 addRPNDefn("inv", "(x -> 1 x /)");
-addRPNDefn("fold", "(x acc fn -> '(-> acc) '(-> x acc fn 'fn fold) 'x \"stop ==)");
+addRPNDefn("fold", "(x acc fn -> 'acc '(-> x acc fn 'fn fold) 'x \"stop ==)");
