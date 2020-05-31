@@ -52,6 +52,7 @@ const snd = (_, args) => [args[0].snd];
 
 const eq = (_, args) => {
     if (args[0].type === args[1].type && args[0].val === args[1].val) {
+        console.log(args[0], args[1])
         return [{type:"ident", val:"true"}];
     } else {
         return [{type:"ident", val:"false"}];
@@ -92,7 +93,7 @@ addDefn("snd", ["pair"], snd);
 addDefn("arr", ["int"], arr);
 addDefn("!!", ["int", "array"], index);
 addDefn("len", ["array"], len);
-addDefn("coerce", 2, coerce);
+addDefn("unsafeCoerce", 2, coerce);
 //addRPNDefn("unit", "(-> 0 arr)");
 //addRPNDefn("mono", "(-> 1 arr)");
 //addRPNDefn("unwrap", "(-> 0 !!)");

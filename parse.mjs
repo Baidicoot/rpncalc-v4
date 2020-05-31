@@ -145,12 +145,11 @@ const parseName = (stream) => {
 }
 
 const parseType = (stream) => {
-    
     let syn = attempt(parseSyntax("\""))(stream);
     if (syn.parsed === null) {
         return {parsed:null, stream:syn.stream};
     }
-    let id = parseIdent(syn.stream);
+    let id = or(parseIdent, parseInteger)(syn.stream);
     if (id.parsed === null) {
         return {parsed:null, stream:id.stream};
     }
