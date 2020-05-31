@@ -9,25 +9,37 @@
 <p>@ me (aidanprattewart@protonmail.com) if you have any errors, with console output please.</p>
 <textarea type="text" id="inbox"></textarea>
 <button id="submit">execute</button>
-<p id="outbox"></p>
+<pre id="outbox"></pre>
 <script src="./main.js" type="module"></script>
 <p>
 <h2>Docs</h2>
-<h3>Lambda/Function Syntax</h3>
-named function (added to scope, not applied): <code>(swap; a b -> b a)</code>
+<h3>Lambda Syntax</h3>
+lambda: <code>a b -> b a</code>
+parensed lambda: <code>(a -> a)</code>
+<h3>Let-In Syntax</h3>
+not called immediately; call-by-name
 <br>
-can be called later like: <code>1 2 swap</code>
+let: <code>(name; value1 value2)</code> N.B. when called, applies (pushes) both values to the stack
 <br>
-unnamed function, applied immediately: <code>1 2 3 (a b c -> a b c)</code>
+example named function: <code>(++; x -> x 1 +)</code>
+<h3>Pairings</h3>
+<code>1 2 pair</code> evaluates to <code>{1, 2}</code>
 <br>
-when lambdas return, they return entire stacks, which are sequentially applied back onto the stack
-<h3>Partial Application</h3>
-<code>1 +</code> will push a partially-applied function onto the stack
+can call <code>fst</code> and <code>snd</code> on pairs
+<h3>Partials</h3>
+<code>'+</code> pushes (not applies) a closure onto the stack
 <br>
-this could be called with: <code>1 + (partial -> 2 partial)</code>
-<h3>Pairs</h3>
-pairs of 2 values can be created with <code>pair</code>
+<code>1 +</code> is a partially applied function/closure
+<h3>Type Literals</h3>
+Essentialy strings.
 <br>
-they can be deconstructed using <code>fst</code> or <code>snd</code>
+Example useage: <code>"1 "int coerce 1 +</code>
+<h3>Equality</h3>
+Internaly JS-based, derived for all objects, pushes lambdas representing true and false onto the stack.
+For example: <code>"true-option "false-option val1 val2 ==</code>
+<h2>Examples</h2>
+factorial: <code>(!; x -> 1 '(-> x 1 - ! x *) x 0 ==)</code>
+<br>
+fold (stops at type literal <code>"stop</code>): <code>(fold; x acc fn -> '(-> acc) '(-> x acc fn 'fn fold) 'x \"stop ==)</code>
 </p>
 </html>
