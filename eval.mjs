@@ -86,11 +86,13 @@ const cloneElem = (elem) => {
 
 const lookupScope = (name, scope) => {
     let n = scope[name];
+    console.log(n);
     if (n) {
         return cloneElem(n);
     }
     n = builtinDefn[name];
     if (n) {
+        console.log(name, n);
         return cloneElem(n);
     } else {
         throw 'var "' + name + '" not in scope'
@@ -107,20 +109,24 @@ const giveArg = (closure, arg, scope) => {
 }
 
 const apply = (elem, stack) => {
-    if (elem.type === "closure") {
-        if (elem.func.nargs === 0) {
-            applyMany(elem.func.defn(stack.scope, []), stack);
-        } else if (stack.stack.length > 0) {
-            let out = giveArg(elem, stack.stack.pop(), stack.scope);
-            applyMany(out, stack);
+    if (Array.isArray(elem)) {
+        applyMany(elem, stack);
+    } else {
+        if (elem.type === "closure") {
+            if (elem.func.nargs === 0) {
+                apply(elem.func.defn(stack.scope, []), stack);
+            } else if (stack.stack.length > 0) {
+                let out = giveArg(elem, stack.stack.pop(), stack.scope);
+                apply(out, stack);
+            } else {
+                stack.stack.push(elem);
+            }
+        } else if (elem.type === "ident") {
+            let id = lookupScope(elem.val, stack.scope);
+            apply(id, stack);
         } else {
             stack.stack.push(elem);
         }
-    } else if (elem.type === "ident") {
-        let id = lookupScope(elem.val, stack.scope);
-        apply(id, stack);
-    } else {
-        stack.stack.push(elem);
     }
 }
 
@@ -140,7 +146,7 @@ const pushS = (elem, stack) => {
 }
 
 const defn = (elem, name, stack) => {
-    stack.scope[name] = makeObj(elem);
+    stack.scope[name] = execRPN(stack.scope, elem).stack;
 }
 
 const doStep = (ins, stack) => {

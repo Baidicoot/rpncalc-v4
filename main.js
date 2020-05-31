@@ -14,7 +14,7 @@ const show = (elem) => {
         return "{" + show(elem.val.fst) + ", " + show(elem.val.snd) + "}"
     } else if (elem.type === "closure") {
         return "(args: {" + prettyprint(elem.args) + "} of " + elem.func.nargs + ")"
-    } else if (elem.type === "string") {
+    } else if (elem.type === "type") {
         return elem.val
     } else if (elem.type === "array") {
         return "[" + prettyprint(elem.val) + "]"
@@ -45,11 +45,15 @@ submit.onclick = (event) => {
         return;
     }
     console.log(ast.parsed);
-    let out = execRPN({}, ast.parsed);
-    if (!out) {
-        outbox.innerHTML = "failed to execute";
-        return;
+    try {
+        let out = execRPN({}, ast.parsed);
+        if (!out) {
+            outbox.innerHTML = "failed to execute";
+            return;
+        }
+        console.log(out);
+        outbox.innerHTML = prettyprint(out.stack);
+    } catch (error) {
+        outbox.innerHTML = error;
     }
-    console.log(out);
-    outbox.innerHTML = prettyprint(out.stack);
 }

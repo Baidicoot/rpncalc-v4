@@ -175,11 +175,11 @@ const parsePush = (stream) => {
 const parseDefn = (stream) => {
     let name = parseName(stream);
     if (name.parsed === null) {
-        return {parsed:null, stream:name.stream};
+        throw 'no name found!'
     }
-    let expr = parseExpr(stream);
+    let expr = parseExprs(stream);
     if (expr.parsed === null) {
-        return {parsed:null, stream:expr.stream};
+        throw 'no body found!'
     }
     return {parsed:{type:"defn", ident:name.parsed, defn:expr.parsed}, stream:expr.stream}
 }
