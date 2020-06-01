@@ -1,4 +1,4 @@
-import {defnOp, makeOp, defn} from './shiny.mjs';
+import {defnOp, makeOp, defn, execRPN} from './shiny.mjs';
 import {parseExprs} from './parse.mjs';
 import {tokenize} from './token.mjs';
 
@@ -16,9 +16,21 @@ const addRPNDefn = (name, def) => {
     scope = defn(name, ast.parsed, scope);
 }
 
-const ASTs = { // should export makeStackElems or eq. to allow for this kind of thing ('ast'?)
-    "true":parseExprs(tokenize("(a b -> a)")).parsed,
-    "false":parseExprs(tokenize("(a b -> b)")).parsed,
+const ast = (def) => {
+    let toks = tokenize(def);
+    if (!toks) {
+        throw 'could not load builtin'
+    }
+    let ast = parseExprs(toks);
+    if (!ast.parsed) {
+        throw 'could not load builtin'
+    }
+    return execRPN({}, ast.parsed).stacks[0];
+}
+
+const ASTs = {
+    "true":ast("(a b -> b)"),
+    "false":ast("(a b -> b)"),
 }
 
 const assertType = (type) => (elem) => {
@@ -91,13 +103,11 @@ const fst = (args) => [args[0].fst];
 const snd = (args) => [args[0].snd];
 
 const eq = (args) => {
-    args = defn("true", ASTs["true"], args);
-    args = defn("false", ASTs["false"], args);
     if (args[0].type === args[1].type && args[0].val === args[1].val) {
         console.log(args[0], args[1])
-        return args["true"];
+        return ASTs["true"];
     } else {
-        return args["false"];
+        return ASTs["false"];
     }
 }
 
