@@ -1,7 +1,7 @@
 import {execRPN} from './shiny.mjs';
 import {parseExprs} from './parse.mjs';
 import {tokenize} from './token.mjs';
-//import './builtin.mjs';
+import {scope} from './builtin.mjs';
 
 const inbox = document.getElementById("inbox")
 const outbox = document.getElementById("outbox")
@@ -19,7 +19,7 @@ const show = (elem) => {
     } else if (elem.type === "array") {
         return "[" + prettyprint(elem.val) + "]"
     } else if (elem.val) {
-        return "(" + elem.type + ": " + elem.val + ")"
+        return "(" + elem.val + ": " + elem.type + ")"
     } else {
         return elem.type
     }
@@ -48,11 +48,11 @@ submit.onclick = (event) => {
         outbox.innerHTML = "incorrect syntax somewhere";
         return;
     }
-    let out = execRPN({}, ast.parsed);
+    let out = execRPN(scope, ast.parsed);
     if (!out) {
         outbox.innerHTML = "failed to execute";
         return;
     }
-    //console.log(out.stacks);
+    console.log(out);
     outbox.innerHTML = prettyprint(out.stacks[0]);
 }

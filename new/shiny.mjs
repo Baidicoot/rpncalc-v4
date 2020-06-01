@@ -17,6 +17,8 @@ TYPE        VAL
 
 exported functionality:
 defnOp(name, function) - define a built-in operator
+defn(name, ins, scope) - extend scope with AST
+makeOp(name, args, fn) - lift a function to an operator
 evalRPN(scope, ast)
 */
 
@@ -26,12 +28,25 @@ export const defnOp = (name, data) => {
     builtins[name] = data;
 }
 
+export const defn = (name, ins, scope) => {
+    let defscope = Object.create(scope);
+    let fnForm = {type:"closure", val:{scope:defscope, args:[], defn:{type:"ins", ins:ins}}};
+    defscope[name] = [fnForm];
+    let out = execRPN(defscope, ins);
+    defscope[name] = out.stacks[0];
+    return defscope;
+}
+
+export const makeOp = (args, fn) => {
+    return [{type:"closure", val:{scope:{}, args:args, defn:{type:"builtin", fn:fn}}}];
+}
+
 const lookup = (name, scope) => {
     let n = scope[name];
     if (n) {
         return n;
     }
-    n = builtins[n];
+    n = builtins[name];
     if (n) {
         return n;
     }
@@ -100,16 +115,7 @@ const doIns = (ins, state) => {
     if (ins.type === "push") {
         state.stacks[state.stacks.length-1] = state.stacks[state.stacks.length-1].concat(makeStackElems(ins.elem, state));
     } else if (ins.type === "defn") {
-        // initialize definition scope
-        let defscope = Object.create(state.scopes[state.scopes.length-1]);
-        // parse into closure for definition's scope (to allow for recursion)
-        let fnForm = {type:"closure", val:{scope:defscope, args:[], defn:{type:"ins", ins:ins.defn}}};
-        // add fnForm to definition scope
-        defscope[ins.ident] = [fnForm];
-        // evaluate fnForm
-        let out = execRPN(defscope, ins.defn);
-        defscope[ins.ident] = out.stacks[0];
-        state.scopes[state.scopes.length-1] = defscope;
+        state.scopes[state.scopes.length-1] = defn(ins.ident, ins.defn, state.scopes[state.scopes.length-1]);
     } else {
         applyMany(makeStackElems(ins, state), state);
     }
@@ -129,7 +135,11 @@ const step = (state) => {
     } else {
         let ins = state.calls[state.calls.length-1][0];
         state.calls[state.calls.length-1] = state.calls[state.calls.length-1].slice(1);
-        doIns(ins, state);
+        try {
+            doIns(ins, state);
+        } catch (error) {
+            throw error + ' while executing "' + ins.val + '"'
+        }
     }
 }
 
