@@ -72,7 +72,7 @@ const makeObj = (elem) => {
     }
 }
 
-const cloneElem = (elem) => {
+export const cloneElem = (elem) => {
     if (Array.isArray(elem)) {
         return elem.map(cloneElem);
     } if (elem.type === "closure") {
@@ -81,6 +81,8 @@ const cloneElem = (elem) => {
             argsClone.push(cloneElem(elem.args[i]));
         }
         return {type:"closure", args:argsClone, func:elem.func};
+    } else if (elem.val) {
+        return {type:elem.type, val:elem.val};
     } else {
         return elem;
     }
@@ -148,7 +150,6 @@ const pushS = (elem, stack) => {
     } else {
         if (elem.type === "ident") {
             let id = lookupScope(elem.val, stack.scope);
-            console.log(id);
             pushS(id, stack);
         } else {
             stack.stack.push(elem);
@@ -176,10 +177,15 @@ const showIns = (curr) => {
         return curr.val;
     } else if (curr.type === "push") {
         return "'" + showIns(curr.elem)
+    } else if (curr.type === "func") {
+        return "anon"
+    } else if (curr.type === "defn") {
+        return curr.ident;
     }
 }
 
 export const execRPN = (scope, i) => {
+    console.log(scope);
     let ins = JSON.parse(JSON.stringify(i));
     let stack = {scope:scope, stack:[]};
     while (ins.length > 0) {

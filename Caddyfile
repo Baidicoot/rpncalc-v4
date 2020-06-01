@@ -1,3 +1,9 @@
 aidan-network.duckdns.org {
+  root ./old/
+  file_server
+}
+
+localhost:8443 {
+  root ./new/
   file_server
 }

@@ -1,7 +1,7 @@
-import {execRPN} from './eval.mjs';
+import {execRPN} from './shiny.mjs';
 import {parseExprs} from './parse.mjs';
 import {tokenize} from './token.mjs';
-import './builtin.mjs';
+//import './builtin.mjs';
 
 const inbox = document.getElementById("inbox")
 const outbox = document.getElementById("outbox")
@@ -13,11 +13,15 @@ const show = (elem) => {
     } else if (elem.type === "pair") {
         return "{" + show(elem.val.fst) + ", " + show(elem.val.snd) + "}"
     } else if (elem.type === "closure") {
-        return "(args: {" + prettyprint(elem.args) + "} of " + elem.func.nargs + ")"
+        return "(needs: " + elem.val.args.join(", ") + ")"
     } else if (elem.type === "type") {
         return elem.val
     } else if (elem.type === "array") {
         return "[" + prettyprint(elem.val) + "]"
+    } else if (elem.val) {
+        return "(" + elem.type + ": " + elem.val + ")"
+    } else {
+        return elem.type
     }
 }
 
@@ -44,16 +48,11 @@ submit.onclick = (event) => {
         outbox.innerHTML = "incorrect syntax somewhere";
         return;
     }
-    console.log(ast.parsed);
-    try {
-        let out = execRPN({}, ast.parsed);
-        if (!out) {
-            outbox.innerHTML = "failed to execute";
-            return;
-        }
-        console.log(out);
-        outbox.innerHTML = prettyprint(out.stack);
-    } catch (error) {
-        outbox.innerHTML = error;
+    let out = execRPN({}, ast.parsed);
+    if (!out) {
+        outbox.innerHTML = "failed to execute";
+        return;
     }
+    //console.log(out.stacks);
+    outbox.innerHTML = prettyprint(out.stacks[0]);
 }
