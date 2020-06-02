@@ -13,6 +13,8 @@ const stepb = document.getElementById("step")
 const play = document.getElementById("play")
 const load = document.getElementById("load")
 
+const usestd = document.getElementById("use-std")
+
 let state = null;
 let input = null;
 
@@ -36,7 +38,23 @@ const loadState = () => {
     }
     insbox.innerHTML = input;
     outbox.innerHTML = "";
-    state = {scopes:[scope], stacks:[[]], calls:[ast.parsed.arr]};
+    if (usestd.checked) {
+        state = {scopes:[scope], stacks:[[]], calls:[ast.parsed.arr]};
+    } else {
+        state = {scopes:[{}], stacks:[[]], calls:[ast.parsed.arr]};
+    }
+}
+
+const showIns = (ins) => {
+    if (ins.val) {
+        return ins.val;
+    } else if (ins.ident) {
+        return ins.ident;
+    } else if (ins.name) {
+        return ins.name;
+    } else {
+        return 'anon';
+    }
 }
 
 load.onclick = _ => {
@@ -49,9 +67,12 @@ play.onclick = _ => {
     }
     insbox.innerHTML = "";
     while (state.calls[0].length > 0 || state.calls.length > 1) {
-        step(state, customHandler);
-        if (state.stacks.length > 4096) {
-            insbox.innerHTML = "max recursion depth exceeded"
+        try {
+            step(state, customHandler, showIns);
+        } catch (err) {
+            insbox.innerHTML = err;
+            state = null;
+            input = null;
             return;
         }
     }
@@ -65,7 +86,15 @@ stepb.onclick = _ => {
         return;
     }
     if (state.calls[0].length > 0 || state.calls.length > 1) {
-        let pos = step(state, customHandler);
+        let pos;
+        try {
+            pos = step(state, customHandler, showIns);
+        } catch (err) {
+            insbox.innerHTML = err;
+            state = null;
+            input = null;
+            return;
+        }
         if (!(pos.start === 0 && pos.end === 0)) {
             insbox.innerHTML = highlight(input, pos.start, pos.end, "green");
         }
@@ -74,10 +103,6 @@ stepb.onclick = _ => {
         } else {
             outbox.innerHTML = prettyprint(state.stacks[0]);
         }
-        if (state.stacks.length > 4096) {
-            insbox.innerHTML = "max recursion depth exceeded"
-            return;
-        }
     }
 }
 
@@ -85,7 +110,7 @@ const show = (elem) => {
     if (elem.type === "pair") {
         return "{" + show(elem.val.fst) + ", " + show(elem.val.snd) + "}"
     } else if (elem.type === "closure") {
-        return "(needs: " + elem.val.args.join(", ") + ")"
+        return "(needs " + elem.val.args.length + ")"
     } else if (elem.type === "array") {
         return "[" + prettyprint(elem.val) + "]"
     } else {

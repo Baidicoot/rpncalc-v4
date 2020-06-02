@@ -121,7 +121,10 @@ const doIns = (ins, state, handler) => {
     }
 }
 
-export const step = (state, handler) => {
+export const step = (state, handler, showIns, maxdepth) => {
+    if (state.stacks.length > maxdepth) {
+        throw 'max recursion depth exceeded'
+    }
     if (state.calls[state.calls.length-1].length === 0) {
         if (state.calls.length === 1) {
             throw 'finished execution'
@@ -137,18 +140,19 @@ export const step = (state, handler) => {
     } else {
         let ins = state.calls[state.calls.length-1][0];
         state.calls[state.calls.length-1] = state.calls[state.calls.length-1].slice(1);
-        doIns(ins, state, handler);
+        try {
+            doIns(ins, state, handler);
+        } catch (error) {
+            throw error + ' while executing "' + showIns(ins) + '"'
+        }
         return ins.pos;
     }
 }
 
-export const execRPN = (scope, ins, handler=(x)=>[x]) => {
+export const execRPN = (scope, ins, handler=(x)=>[x], showIns=(x)=>x.name, maxdepth=16384) => {
     let state = {scopes:[scope], stacks:[[]], calls:[ins]};
     while (state.calls[0].length > 0 || state.calls.length > 1) {
-        step(state, handler);
-        if (state.stacks.length > 4096) {
-            throw 'max recursion depth exceeded'
-        }
+        step(state, handler, showIns, maxdepth);
     }
     return state;
 }
