@@ -1,27 +1,21 @@
 import {execRPN} from './shiny.mjs';
 import {parseExprs} from './parse.mjs';
 import {tokenize} from './token.mjs';
-import {scope} from './builtin.mjs';
+import {scope, customHandler} from './builtin.mjs';
 
 const inbox = document.getElementById("inbox")
 const outbox = document.getElementById("outbox")
 const submit = document.getElementById("submit")
 
 const show = (elem) => {
-    if (elem.type === "int") {
-        return elem.val
-    } else if (elem.type === "pair") {
+    if (elem.type === "pair") {
         return "{" + show(elem.val.fst) + ", " + show(elem.val.snd) + "}"
     } else if (elem.type === "closure") {
         return "(needs: " + elem.val.args.join(", ") + ")"
-    } else if (elem.type === "type") {
-        return elem.val
     } else if (elem.type === "array") {
         return "[" + prettyprint(elem.val) + "]"
-    } else if (elem.val) {
-        return "(" + elem.val + ": " + elem.type + ")"
     } else {
-        return elem.type
+        return "(" + elem.val + ": " + elem.type + ")"
     }
 }
 
@@ -44,11 +38,11 @@ submit.onclick = (event) => {
         return;
     }
     let ast = parseExprs(toks);
-    if (!ast.parsed) {
-        outbox.innerHTML = "incorrect syntax somewhere";
+    if (ast.stream.length !== 0) {
+        outbox.innerHTML = "unexpected token: " + ((e)=>{if(e.type==="ident"){return e.name}else{return e.val}})(ast.stream[0]);
         return;
     }
-    let out = execRPN(scope, ast.parsed);
+    let out = execRPN(scope, ast.parsed, customHandler);
     if (!out) {
         outbox.innerHTML = "failed to execute";
         return;

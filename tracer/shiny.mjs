@@ -121,7 +121,7 @@ const doIns = (ins, state, handler) => {
     }
 }
 
-const step = (state, handler) => {
+export const step = (state, handler) => {
     if (state.calls[state.calls.length-1].length === 0) {
         if (state.calls.length === 1) {
             throw 'finished execution'
@@ -133,10 +133,12 @@ const step = (state, handler) => {
         state.scopes.pop();
         let out = state.stacks.pop();
         applyMany(out, state);
+        return {start:0, end:0};
     } else {
         let ins = state.calls[state.calls.length-1][0];
         state.calls[state.calls.length-1] = state.calls[state.calls.length-1].slice(1);
         doIns(ins, state, handler);
+        return ins.pos;
     }
 }
 

@@ -1,9 +1,9 @@
-aidan-network.duckdns.org {
-  root ./old/
+aidanpe.duckdns.org {
+  root ./tracer/
   file_server
 }
 
-localhost:8443 {
+rpn.aidanpe.duckdns.org {
   root ./new/
   file_server
 }

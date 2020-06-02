@@ -1,0 +1,96 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/node', '/usr/bin/npm', 'i', 'rationals' ]
+2 info using npm@3.5.2
+3 info using node@v8.10.0
+4 verbose config Skipping project config: /home/aidan/.npmrc. (matches userconfig)
+5 silly loadCurrentTree Starting
+6 silly install loadCurrentTree
+7 silly install readLocalPackageData
+8 silly fetchPackageMetaData rationals
+9 silly fetchNamedPackageData rationals
+10 silly mapToRegistry name rationals
+11 silly mapToRegistry using default registry
+12 silly mapToRegistry registry https://registry.npmjs.org/
+13 silly mapToRegistry uri https://registry.npmjs.org/rationals
+14 verbose request uri https://registry.npmjs.org/rationals
+15 verbose request no auth needed
+16 info attempt registry request try #1 at 19:23:48
+17 verbose request id 1f9e752341fc452f
+18 verbose etag W/"e0fb616d3d75eb1a38936789fa99e693"
+19 verbose lastModified Sat, 12 Oct 2019 22:31:44 GMT
+20 http request GET https://registry.npmjs.org/rationals
+21 http 304 https://registry.npmjs.org/rationals
+22 verbose headers { date: 'Mon, 01 Jun 2020 18:23:48 GMT',
+22 verbose headers   connection: 'keep-alive',
+22 verbose headers   'set-cookie':
+22 verbose headers    [ '__cfduid=da1ea1de35cfdbd41bc4da4edd15edf091591035828; expires=Wed, 01-Jul-20 18:23:48 GMT; path=/; domain=.npmjs.org; HttpOnly; SameSite=Lax' ],
+22 verbose headers   'cf-ray': '59caf7cabb5ad210-MAN',
+22 verbose headers   age: '10',
+22 verbose headers   'cache-control': 'public, max-age=300',
+22 verbose headers   etag: '"e0fb616d3d75eb1a38936789fa99e693"',
+22 verbose headers   'last-modified': 'Sat, 12 Oct 2019 22:31:44 GMT',
+22 verbose headers   vary: 'Accept-Encoding',
+22 verbose headers   'cf-cache-status': 'HIT',
+22 verbose headers   'cf-request-id': '0312b932ae0000d2108792b200000001',
+22 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+22 verbose headers   server: 'cloudflare' }
+23 silly get cb [ 304,
+23 silly get   { date: 'Mon, 01 Jun 2020 18:23:48 GMT',
+23 silly get     connection: 'keep-alive',
+23 silly get     'set-cookie':
+23 silly get      [ '__cfduid=da1ea1de35cfdbd41bc4da4edd15edf091591035828; expires=Wed, 01-Jul-20 18:23:48 GMT; path=/; domain=.npmjs.org; HttpOnly; SameSite=Lax' ],
+23 silly get     'cf-ray': '59caf7cabb5ad210-MAN',
+23 silly get     age: '10',
+23 silly get     'cache-control': 'public, max-age=300',
+23 silly get     etag: '"e0fb616d3d75eb1a38936789fa99e693"',
+23 silly get     'last-modified': 'Sat, 12 Oct 2019 22:31:44 GMT',
+23 silly get     vary: 'Accept-Encoding',
+23 silly get     'cf-cache-status': 'HIT',
+23 silly get     'cf-request-id': '0312b932ae0000d2108792b200000001',
+23 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+23 silly get     server: 'cloudflare' } ]
+24 verbose etag https://registry.npmjs.org/rationals from cache
+25 verbose get saving rationals to /home/aidan/.npm/registry.npmjs.org/rationals/.cache.json
+26 silly install normalizeTree
+27 silly loadCurrentTree Finishing
+28 silly loadIdealTree Starting
+29 silly install loadIdealTree
+30 silly cloneCurrentTree Starting
+31 silly install cloneCurrentTreeToIdealTree
+32 silly cloneCurrentTree Finishing
+33 silly loadShrinkwrap Starting
+34 silly install loadShrinkwrap
+35 silly loadShrinkwrap Finishing
+36 silly loadAllDepsIntoIdealTree Starting
+37 silly install loadAllDepsIntoIdealTree
+38 verbose stack Error: Missing required argument #1
+38 verbose stack     at andLogAndFinish (/usr/share/npm/lib/fetch-package-metadata.js:31:3)
+38 verbose stack     at fetchPackageMetadata (/usr/share/npm/lib/fetch-package-metadata.js:51:22)
+38 verbose stack     at resolveWithNewModule (/usr/share/npm/lib/install/deps.js:456:12)
+38 verbose stack     at /usr/share/npm/lib/install/deps.js:190:5
+38 verbose stack     at /usr/share/npm/node_modules/slide/lib/async-map.js:52:35
+38 verbose stack     at Array.forEach (<anonymous>)
+38 verbose stack     at /usr/share/npm/node_modules/slide/lib/async-map.js:52:11
+38 verbose stack     at Array.forEach (<anonymous>)
+38 verbose stack     at asyncMap (/usr/share/npm/node_modules/slide/lib/async-map.js:51:8)
+38 verbose stack     at exports.loadRequestedDeps (/usr/share/npm/lib/install/deps.js:188:3)
+39 verbose cwd /home/aidan/Desktop/js-projects/rpncalc-v4
+40 error Linux 5.3.0-53-generic
+41 error argv "/usr/bin/node" "/usr/bin/npm" "i" "rationals"
+42 error node v8.10.0
+43 error npm  v3.5.2
+44 error code EMISSINGARG
+45 error typeerror Error: Missing required argument #1
+45 error typeerror     at andLogAndFinish (/usr/share/npm/lib/fetch-package-metadata.js:31:3)
+45 error typeerror     at fetchPackageMetadata (/usr/share/npm/lib/fetch-package-metadata.js:51:22)
+45 error typeerror     at resolveWithNewModule (/usr/share/npm/lib/install/deps.js:456:12)
+45 error typeerror     at /usr/share/npm/lib/install/deps.js:190:5
+45 error typeerror     at /usr/share/npm/node_modules/slide/lib/async-map.js:52:35
+45 error typeerror     at Array.forEach (<anonymous>)
+45 error typeerror     at /usr/share/npm/node_modules/slide/lib/async-map.js:52:11
+45 error typeerror     at Array.forEach (<anonymous>)
+45 error typeerror     at asyncMap (/usr/share/npm/node_modules/slide/lib/async-map.js:51:8)
+45 error typeerror     at exports.loadRequestedDeps (/usr/share/npm/lib/install/deps.js:188:3)
+46 error typeerror This is an error with npm itself. Please report this error at:
+46 error typeerror     <http://github.com/npm/npm/issues>
+47 verbose exit [ 1, true ]

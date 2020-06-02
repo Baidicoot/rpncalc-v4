@@ -36,11 +36,16 @@ const addRPNDefn = (name, def) => {
     if (!toks) {
         throw 'could not load builtin'
     }
+    toks = toks.map(elem => {
+        elem.startPos = 0;
+        elem.endPos = 0;
+        return elem;
+    });
     let ast = parseExprs(toks);
     if (!ast.parsed) {
         throw 'could not load builtin'
     }
-    scope = defn(name, ast.parsed, scope);
+    scope = defn(name, ast.parsed.arr, scope);
 }
 
 const assertType = (type) => (elem) => {
@@ -91,7 +96,6 @@ const index = (args) => args[0][args[1]];
 const len = (args) => [{type:"num", val:args[0].length}];
 
 const eq = (args) => {
-    console.log(args[2], args[3])
     if (args[2].type === args[3].type && objEq(args[2].val, args[3].val)) {
         return [args[0]];
     } else {
