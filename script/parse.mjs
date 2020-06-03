@@ -115,6 +115,19 @@ const parseType = (stream) => {
     //return {parsed:null, stream:stream};
 }
 
+const parseString = (stream) => {
+    let e = stream[0];
+    if (e === undefined) {
+        return {parsed:null, stream:stream};
+    }
+    if (e.type !== "string") {
+        return {parsed:null, stream:stream};
+    } else {
+        stream.shift();
+        return {parsed:{type:e.type, val:e.val}, stream:stream};
+    }
+}
+
 /* takes in stream, outputs parsed item or null - FAILABLE */
 const parsePush = (stream) => {
     let syn = attempt(parseSyntax("'"))(stream);
@@ -161,9 +174,10 @@ const parseExpr = or(
     attempt(parseLambda), or(
     parseType, or(
     parseIdent, or(
-    parseNum,
+    parseNum, or(
+    parseString,
     parsePush
-    ))))));
+    )))))));
 
 /* takes in stream, outputs parsed items */
 export const parseExprs = many(parseExpr);

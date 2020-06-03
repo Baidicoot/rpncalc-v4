@@ -18,7 +18,7 @@ code {
 <pre id="insbox"></pre>
 <pre id="outbox"></pre>
 <script src="./main.js" type="module"></script>
-<h3>Documentation</h3>
+<h3>documentation</h3>
 <p>use <code>(name; value)</code> to define something. the definition can be recursive. <code>value</code> is executed and <code>name</code> is set to the final state of the stack, i.e. <code>(name; 1 3)</code> is possible</p>
 <p>use <code>'</code> to push instead of apply to the stack, e.g. <code>'(a -> a)</code>. This is useful for lazyness, i.e. <code>'(->lazy evaluated thing)</code></p>
 <ul>
@@ -29,10 +29,17 @@ code {
 <li><code>tuple</code>: used like <code>... 3 tuple</code>; creates an n tuple of n items on the stack</li>
 <li><code>!!</code>: index into a tuple</li>
 <li><code>len</code>: length of a tuple</li>
-<li><code>unsafeCoerce</code>: unsafely transforms one type into another. useage: <code>1 "type unsafeCoerce</code></li>
-<li><code>true, false</code>: true/false used in <code>==</code></li>
-<li><code>stop</code>: equivalent to <code>"stop</code></li>
-<li><code>inv</code>: equivalent to <code>1 x /</code></li>
-<li><code>fold</code>: equivalent to <code>x acc fn -> acc '(-> x acc fn 'fn fold) 'x \"stop ==</code></li>
+</ul>
+<h3>stdlib</h3>
+<ul>
+<li><code>stop; "stop</code></li>
+<li><code>inv; x -> 1 x /</code></li>
+<li><code>fold; x acc fn -> acc '(-> x acc fn 'fn fold) 'x \"stop ==</code></li>
+<li><code>range; x y -> x '(->x x 1 + y range) 'x y ==</code></li>
+<li><code>listthen; fn -> (internal; x acc -> '(->acc fn) '(->x acc pair internal) x stop ==) 0 tuple internal</code></li>
+<li><code>list; (a -> a) listthen</code></li>
+<li><code>lmap; list fn -> list '(->list fst fn list snd 'fn lmap pair) list 0 tuple ==</code></li>
+<li><code>unlist; l -> (internal; list -> '(->) '(->list fst list snd internal) list 0 tuple ==) stop l internal</code></li>
+<li><code>map; fn -> '(l->l 'fn lmap unlist) listthen</code></li>
 </ul>
 </html>

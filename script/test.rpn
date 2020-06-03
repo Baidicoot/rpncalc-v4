@@ -1,0 +1,45 @@
+(output; `out` getId)
+
+(acc; 0 mutref)
+(stack; 0 tuple mutref)
+
+(show; '(->
+    output acc readmut "string coerce setHTML))
+
+(writeDigit; x ->
+    acc readmut 10 * x + acc writemut show)
+
+(spush; stack val ->
+    stack untuple val stack len 1 + tuple)
+
+(push; '(->
+    stack readmut acc readmut spush stack writemut))
+
+(spop; stack ->
+    stack untuple (a ->) stack len 1 - tuple)
+
+(last; stack ->
+    stack stack len 1 - !!)
+
+(pop; '(->
+    stack readmut last stack readmut spop stack writemut))
+
+(b1; `1` getId) b1 '(->1 writeDigit) onclick
+(b2; `2` getId) b2 '(->2 writeDigit) onclick
+(b3; `3` getId) b3 '(->3 writeDigit) onclick
+(b4; `4` getId) b4 '(->4 writeDigit) onclick
+(b5; `5` getId) b5 '(->5 writeDigit) onclick
+(b6; `6` getId) b6 '(->6 writeDigit) onclick
+(b7; `7` getId) b7 '(->7 writeDigit) onclick
+(b8; `8` getId) b8 '(->8 writeDigit) onclick
+(b9; `9` getId) b9 '(->9 writeDigit) onclick
+(b0; `0` getId) b0 '(->0 writeDigit) onclick
+
+(bpush; `push` getId) bpush '(->push 0 acc writemut show) onclick
+(bpop; `pop` getId) bpop '(->pop acc writemut show) onclick
+(bzero; `zero` getId) bzero '(->0 acc writemut show) onclick
+
+(badd; `add` getId) badd '(->pop pop + acc writemut show) onclick
+(bsub; `sub` getId) bsub '(->pop pop (a b -> b a) - acc writemut show) onclick
+(bmul; `mul` getId) bmul '(->pop pop * acc writemut show) onclick
+(bdiv; `div` getId) bdiv '(->pop pop (a b -> b a) / acc writemut show) onclick

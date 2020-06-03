@@ -99,7 +99,7 @@ const applyMany = (elems, state) => {
     }
 }
 
-const makeStackElems = (ins, state, handler) => {
+const makeStackElems = (ins, state) => {
     if (ins.type === "push") {
         throw 'nested push error'
     } else if (ins.type === "ident") {
@@ -107,21 +107,21 @@ const makeStackElems = (ins, state, handler) => {
     } else if (ins.type === "func") {
         return [{type:"closure", val:{scope:state.scopes[state.scopes.length-1], args:ins.args, defn:{type:"ins", ins:ins.body}}}];
     } else {
-        return handler(ins);
+        return [ins];
     }
 }
 
-const doIns = (ins, state, handler) => {
+const doIns = (ins, state) => {
     if (ins.type === "push") {
-        state.stacks[state.stacks.length-1] = state.stacks[state.stacks.length-1].concat(makeStackElems(ins.elem, state, handler));
+        state.stacks[state.stacks.length-1] = state.stacks[state.stacks.length-1].concat(makeStackElems(ins.elem, state));
     } else if (ins.type === "defn") {
         state.scopes[state.scopes.length-1] = defn(ins.ident, ins.defn, state.scopes[state.scopes.length-1]);
     } else {
-        applyMany(makeStackElems(ins, state, handler), state);
+        applyMany(makeStackElems(ins, state), state);
     }
 }
 
-const step = (state, handler) => {
+const step = (state) => {
     if (state.calls[state.calls.length-1].length === 0) {
         if (state.calls.length === 1) {
             throw 'finished execution'
@@ -136,17 +136,26 @@ const step = (state, handler) => {
     } else {
         let ins = state.calls[state.calls.length-1][0];
         state.calls[state.calls.length-1] = state.calls[state.calls.length-1].slice(1);
-        doIns(ins, state, handler);
+        doIns(ins, state);
     }
 }
 
-export const execRPN = (scope, ins, handler=(x)=>[x]) => {
-    let state = {scopes:[scope], stacks:[[]], calls:[ins]};
+export const exec = (state) => {
     while (state.calls[0].length > 0 || state.calls.length > 1) {
-        step(state, handler);
+        step(state);
         if (state.stacks.length > 4096) {
             throw 'max recursion depth exceeded'
         }
     }
     return state;
+}
+
+export const execFn = (fn) => {
+    let state = {stacks:[[]], scopes:[fn.scope], calls:[fn.defn.ins]};
+    return exec(state);
+}
+
+export const execRPN = (scope, ins) => {
+    let state = {scopes:[scope], stacks:[[]], calls:[ins]};
+    return exec(state);
 }

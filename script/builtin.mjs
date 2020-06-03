@@ -1,6 +1,4 @@
-import {defnOp, makeOp, defn} from './shiny.mjs';
-import {parseExprs} from './parse.mjs';
-import {tokenize} from './token.mjs';
+import {defnOp, makeOp} from './shiny.mjs';
 
 const objEq = (a, b) => {
     if (typeof a !== 'object' && typeof b !== 'object') {
@@ -27,29 +25,13 @@ const objEq = (a, b) => {
 
 export let scope = {};
 
-export const customHandler = (ins) => {
-    return [ins];
-}
-
-const addRPNDefn = (name, def) => {
-    let toks = tokenize(def);
-    if (!toks) {
-        throw 'could not load builtin'
-    }
-    let ast = parseExprs(toks);
-    if (!ast.parsed) {
-        throw 'could not load builtin'
-    }
-    scope = defn(name, ast.parsed, scope);
-}
-
-const assertType = (type) => (elem) => {
+export const assertType = (type) => (elem) => {
     if (elem.type !== type) {
         throw 'typeerror'
     }
 }
 
-const addDefn = (name, args, fn) => {
+export const addDefn = (name, args, fn) => {
     if (Array.isArray(args)) {
         const nargs = [...Array(args.length).keys()];
         const liftFn = (scope) => {
@@ -83,12 +65,25 @@ const mult = (args) => [{type:"num", val:args[0] * args[1]}];
 const pow = (args) => [{type:"num", val:Math.pow(args[0], args[1])}];
 const root = (args) => [{type:"num", val:Math.sqrt(args[0])}];
 const type = (args) => [{type:"type", val:args[0].type}];
-const pair = (args) => [{type:"pair", val:{fst:args[0], snd:args[1]}}];
-const fst = (args) => [args[0].fst];
-const snd = (args) => [args[0].snd];
-const tuple = (args) => makeOp([...Array(args[0]).keys()], (args) => {return [{type:"tuple", val:args}]});
-const index = (args) => args[0][args[1]];
+const index = (args) => [args[0][args[1]]];
 const len = (args) => [{type:"num", val:args[0].length}];
+const untuple = (args) => args[0];
+
+const coerce = (args) => {
+    if (args[1].type === "type") {
+        return [{type:args[1].val, val:args[0].val}];
+    } else {
+        throw 'typeerror'
+    }
+}
+
+const tuple = (args) => makeOp([...Array(args[0]).keys()], (iargs) => {
+    let arr = [];
+    for (let i = 0; i < args[0]; i++) {
+        arr.push(iargs[i][0]);
+    }
+    return [{type:"tuple", val:arr}]
+});
 
 const eq = (args) => {
     console.log(args[2], args[3])
@@ -106,19 +101,9 @@ addDefn("*", ["num", "num"], mult);
 addDefn("^", ["num", "num"], pow);
 addDefn("sqrt", ["num"], root);
 addDefn("==", 4, eq);
-addDefn("pair", 2, pair);
-addDefn("fst", ["pair"], fst);
-addDefn("snd", ["pair"], snd);
 addDefn("tuple", ["num"], tuple);
 addDefn("!!", ["tuple", "num"], index);
 addDefn("len", ["tuple"], len);
+addDefn("untuple", ["tuple"], untuple);
 addDefn("typeof", 1, type);
-addRPNDefn("stop", "\"stop");
-addRPNDefn("inv", "(x -> 1 x /)");
-addRPNDefn("fold", "(x acc fn -> acc '(-> x acc fn 'fn fold) 'x stop ==)");
-addRPNDefn("range", "(x y -> x '(->x x 1 + y range) 'x y ==)");
-addRPNDefn("listthen", "(fn -> (internal; x acc -> '(->acc fn) '(->x acc pair internal) x stop ==) 0 tuple internal)");
-addRPNDefn("list", "'(a -> a) listthen");
-addRPNDefn("lmap", "(list fn -> list '(->list fst fn list snd 'fn lmap pair) list 0 tuple ==)");
-addRPNDefn("unlist", "(l -> (internal; list -> '(->) '(->list fst list snd internal) list 0 tuple ==) stop l internal)");
-addRPNDefn("map", "fn -> '(l->l 'fn lmap unlist) listthen");
+addDefn("coerce", 2, coerce);
