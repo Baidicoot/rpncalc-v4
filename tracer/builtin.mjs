@@ -81,6 +81,13 @@ const addDefn = (name, args, fn) => {
     }
 }
 
+const addConst = (name, typ, val) => {
+    defnOp(name, [{type:typ, val:val}])
+}
+
+const unary = (fn, outty) => (args) => [{type:outty, val:fn(args[0])}]
+const binary = (fn, outty) => (args) => [{type:outty, val:fn(args[0], args[1])}]
+
 const add = (args) => [{type:"num", val:args[0] + args[1]}];
 const sub = (args) => [{type:"num", val:args[0] - args[1]}];
 const div = (args) => [{type:"num", val:args[0] / args[1]}];
@@ -103,11 +110,23 @@ const eq = (args) => {
     }
 }
 
+const coerce = (args) => [{type:args[1].val, val:args[0].val}]
+
+addConst("pi", "num", Math.PI);
+addConst("e", "num", Math.E);
 addDefn("+", ["num", "num"], add);
 addDefn("-", ["num", "num"], sub);
 addDefn("/", ["num", "num"], div);
 addDefn("*", ["num", "num"], mult);
 addDefn("^", ["num", "num"], pow);
+addDefn("sin", ["num"], unary(Math.sin, "num"));
+addDefn("cos", ["num"], unary(Math.cos, "num"));
+addDefn("tan", ["num"], unary(Math.tan, "num"));
+addDefn("asin", ["num"], unary(Math.asin, "num"));
+addDefn("acos", ["num"], unary(Math.acos, "num"));
+addDefn("atan", ["num"], unary(Math.atan, "num"));
+addDefn("ln", ["num"], unary(Math.log, "num"));
+addDefn("coerce", 2, coerce)
 addDefn("sqrt", ["num"], root);
 addDefn("==", 4, eq);
 addDefn("pair", 2, pair);

@@ -98,11 +98,13 @@ stepb.onclick = _ => {
         if (!(pos.start === 0 && pos.end === 0)) {
             insbox.innerHTML = highlight(input, pos.start, pos.end, "green");
         }
+        /*
         if (state.stacks.length > 1) {
             outbox.innerHTML = "... " + prettyprint(state.stacks[state.stacks.length-1]);
         } else {
             outbox.innerHTML = prettyprint(state.stacks[0]);
-        }
+        }*/
+        outbox.innerHTML = state.stacks.map(prettyprint).join("\n")
     }
 }
 
